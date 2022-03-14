@@ -64,5 +64,15 @@ By default, all repositories you have read access to are backed up. To choose wh
 After preparing the token and the configuration file you now can run the script:
 
 ```
-$ python3 backup.py config.json
+$ ./backup.py
+```
+
+If you want to manually pass the options instead of using the config.json file, you can use the following command:
+```
+$ ./backup.py --token=<TOKEN> --directory=<DIRECTORY> --owners=<USER1,USER2>
+```
+
+For help, type:
+```
+$ ./backup.py -h
 ```

@@ -1,1 +1,13 @@
 config.json
+.idea
+.vscode
+.history
+venv
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+.env.staging
+.env.docker
+config.json

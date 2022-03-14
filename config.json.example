@@ -1,4 +1,5 @@
 {
-    "token": "0123456789abcdef0123456789abcdef",
-    "directory": "~/backups/github.com"
+    "token": "",
+    "directory": "",
+    "owners": [""]
 }
