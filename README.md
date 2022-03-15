@@ -18,7 +18,7 @@ $ pip3 install -r requirements.txt
 
 ### Create a token
 
-For authorization you need to create a new personal GitHub token. You can do this from the GitHub settings, under the **Personal Access Tokens** tab.
+For authorization, you need to create a new personal GitHub token. You can do this from the GitHub settings, under the **Personal Access Tokens** tab.
 
 ![Step 1](images/new-token-1.png)
 
@@ -42,8 +42,10 @@ As an example let's create a file, `config.json`. This file should contain the t
 
 ```
 {
-    "token": "6b86190dd45c57c1a1b039a5a54d892e019102f7",
-    "directory": "~/backups/github.com"
+    "token": "GITHUB_TOKEN_HERE",
+    "directory": "~/backups/github.com",
+    "type": "backup",
+    "owners": []
 }
 ```
 
@@ -53,8 +55,9 @@ By default, all repositories you have read access to are backed up. To choose wh
 
 ```
 {
-    "token": "6b86190dd45c57c1a1b039a5a54d892e019102f7",
+    "token": "GITHUB_TOKEN_HERE",
     "directory": "~/backups/github.com",
+    "type": "backup",
     "owners": ["username", "anotherusername"]
 }
 ```
@@ -69,10 +72,10 @@ $ ./backup.py
 
 If you want to manually pass the options instead of using the config.json file, you can use the following command:
 ```
-$ ./backup.py --token=<TOKEN> --directory=<DIRECTORY> --owners=<USER1,USER2>
+$ ./backup.py --token=<TOKEN> --directory=<DIRECTORY> --username=<USER1,USER2> --type=<TYPE>
 ```
 
 For help, type:
 ```
-$ ./backup.py -h
+$ ./backup.py --help
 ```
