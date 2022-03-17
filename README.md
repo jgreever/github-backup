@@ -1,5 +1,9 @@
 # GitHub backup script
 
+[![CodeQL](https://github.com/jgreever/github-backup/actions/workflows/codeql-analysis.yml/badge.svg?branch=master)](https://github.com/jgreever/github-backup/actions/workflows/codeql-analysis.yml)
+
+[![Python application](https://github.com/jgreever/github-backup/actions/workflows/python-app.yml/badge.svg?branch=master)](https://github.com/jgreever/github-backup/actions/workflows/python-app.yml)
+
 This directory contains a script, `backup.py`, for backing up GitHub repositories.
 
 The script requires a GitHub token and a destination directory. It then uses the token to populate the destination directory with clones of all the repositories the token can access.
