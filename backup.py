@@ -3,7 +3,7 @@
 # File              : backup.py
 # Original Author   : abusesa (https://github.com/abusesa/github-backup)
 # Modified by       : Justin Greever (https://github.com/jgreever/github-backup)
-# Last Modified     : 2022-03-15
+# Last Modified     : 2022-03-16
 # Description       : Backup a GitHub repository
 # Requires          : Python 3.6+
 # ----------------------------------------------------------------------------- #
@@ -35,7 +35,6 @@
 # Import modules
 import argparse
 import configparser
-import errno
 import json
 import os
 import re
@@ -47,7 +46,7 @@ import requests
 
 
 # Version
-__version__ = '1.0.0'
+__version__ = '1.1.0'
 
 
 # Function: import_json_config() - import a JSON config file
@@ -78,14 +77,11 @@ def check_name(name):
 
 
 # Function: mkdir() - create a directory
-def mkdir(path):
-    try:
-        os.makedirs(path, 0o770)
-    except OSError as ose:
-        if ose.errno != errno.EEXIST:
-            raise
-        return False
-    return True
+def mkdir(directory):
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    else:
+        print("Directory already exists: {0}".format(directory))
 
 
 # function: backup() - backup a repository
@@ -97,40 +93,52 @@ def backup(repo_name, repo_url, to_path, username, token, typeof):
     )
     repo_url = urllib.parse.urlunparse(modified)
     repo_path = os.path.join(to_path, username, repo_name)
-    mkdir(repo_path)
-    if typeof == "clone":
-        subprocess.call(
-            [
-                "git",
-                "clone",
-                "--quiet",
-                repo_url,
-                repo_path,
-            ]
-        )
-    elif typeof == "backup":
-        subprocess.call(
-            [
-                "git",
-                "init",
-                "--bare",
-                "--quiet"
-            ],
-            cwd=repo_path
-        )
-        subprocess.call(
-            [
-                "git",
-                "fetch",
-                "--quiet",
-                "--force",
-                "--prune",
-                "--tags",
-                repo_url,
-                "refs/heads/*:refs/heads/*",
-            ],
-            cwd=repo_path,
-        )
+    if os.path.exists(repo_path):
+        print("Repository already exists: {0}".format(repo_path))
+        if typeof == "clone":
+            subprocess.call(
+                [
+                    "git",
+                    "pull",
+                    "--quiet",
+                ],
+                cwd=repo_path
+            )
+    else:
+        mkdir(repo_path)
+        if typeof == "clone":
+            subprocess.call(
+                [
+                    "git",
+                    "clone",
+                    "--quiet",
+                    repo_url,
+                    repo_path,
+                ]
+            )
+        elif typeof == "backup":
+            subprocess.call(
+                [
+                    "git",
+                    "init",
+                    "--bare",
+                    "--quiet"
+                ],
+                cwd=repo_path
+            )
+            subprocess.call(
+                [
+                    "git",
+                    "fetch",
+                    "--quiet",
+                    "--force",
+                    "--prune",
+                    "--tags",
+                    repo_url,
+                    "refs/heads/*:refs/heads/*",
+                ],
+                cwd=repo_path,
+            )
 
 
 # Function: main() - main function
@@ -152,8 +160,8 @@ def main():
         default="config.json",
     )
     parser.add_argument(
-        "--to",
-        "-t",
+        "--directory",
+        "-d",
         help="Path to backup location (default: read from config.json)",
     )
     parser.add_argument(
@@ -163,18 +171,14 @@ def main():
     )
     parser.add_argument(
         "--token",
-        "-k",
+        "-t",
         help="GitHub token (default: read from config.json)",
     )
     parser.add_argument(
-        "--backup",
-        "-b",
-        help="Backup repositories (default: read from config.json)",
-    )
-    parser.add_argument(
-        "--clone",
-        "-l",
-        help="Clone repositories (default: read from config.json)",
+        "--type",
+        "-y",
+        help="Type of backup (default: read from config.json)",
+        choices=["backup", "clone"],
     )
     parser.add_argument(
         "--version",
@@ -190,15 +194,44 @@ def main():
         config = json.loads(f.read())
 
     # If the user has set up the config.json file, we can extract the token,
-    # directory, and owner from the config.json file.
-    owners = config.get("owners")
-    token = config["token"]
-    typeof = config["type"]
-    path = os.path.expanduser(config["directory"])
+    # directory, and owner from the config.json file otherwise we will get the
+    # information from the user via command line arguments.
+    # Check for user input before checking in the config.json file for the
+    # token, directory, and owner. (NOTE: Testing .env for holding the token)
+    if args.token:
+        token = args.token
+    elif os.environ.get("GITHUB_TOKEN"):
+        os.environ['GITHUB_TOKEN'] = config["token"]
+        token = config["token"]
+    elif config["token"]:
+        token = config["token"]
+    else:
+        token = input("GitHub token: ")
 
-    # If the path doesn't exist, we need to create it.
-    if mkdir(path):
-        print("Created directory {0}".format(path), file=sys.stderr)
+    if args.directory:
+        directory = args.directory
+    elif config["directory"]:
+        directory = config["directory"]
+    else:
+        directory = input("Backup location: ")
+
+    if args.owners:
+        owners = args.owners
+    elif config["owners"]:
+        owners = config["owners"]
+    else:
+        owners = input("GitHub owners: ")
+
+    if args.type:
+        typeof = args.type
+    elif config["type"]:
+        typeof = config["type"]
+    else:
+        typeof = input("Type of backup (backup/clone): ")
+
+    # If the directory doesn't exist, we need to create it.
+    if mkdir(directory):
+        print("Created directory {0}".format(directory), file=sys.stderr)
 
     # Login to GitHub and get the list of repositories for each owner.
     user = next(get_json("https://api.github.com/user", token))
@@ -212,15 +245,16 @@ def main():
             # If owner is not in the list, skip it
             if owners and owner not in owners:
                 continue
+
             # If the owner is in the list of owners, then we can mirror the
             # repository and print the output to the console.
             if owners and owner in owners:
                 if typeof == "clone":
                     print("Cloning {0}/{1}".format(owner, name))
-                    backup(name, clone_url, path, user["login"], token, typeof)
+                    backup(name, clone_url, directory, user["login"], token, typeof)
                 elif typeof == "backup":
                     print("Backing up {0}/{1}".format(owner, name))
-                    backup(name, clone_url, path, user["login"], token, typeof)
+                    backup(name, clone_url, directory, user["login"], token, typeof)
                 else:
                     print("Invalid type: {0}".format(typeof))
                 print("Finished Processing {0}/{1}\n".format(owner, name))

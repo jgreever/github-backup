@@ -10,8 +10,8 @@ Repeated runs only update the already existing backups and add new repositories,
 
 Install the required Python dependencies using `pip3`:
 
-```
-$ pip3 install -r requirements.txt
+```bash
+pip3 install -r requirements.txt
 ```
 
 ## Configuring
@@ -26,7 +26,7 @@ When you click the **Generate new token** button you enter the token creation sc
 
 ![Step 2](images/new-token-2.png)
 
-To backup public and private repositories you need to select only the **repo** scope. If you have no need for private repositories just choose the **public_repo** scope.
+To back up public and private repositories you need to select only the **repo** scope. If you have no need for private repositories just choose the **public_repo** scope.
 
 ![Step 3](images/new-token-3.png)
 
@@ -40,7 +40,7 @@ To run the script you need a JSON configuration file. For an example see the inc
 
 As an example let's create a file, `config.json`. This file should contain the token we just created and the destination directory where we want to back up the repositories:
 
-```
+```json
 {
     "token": "GITHUB_TOKEN_HERE",
     "directory": "~/backups/github.com",
@@ -53,12 +53,12 @@ As an example let's create a file, `config.json`. This file should contain the t
 
 By default, all repositories you have read access to are backed up. To choose which users' and organizations' repos are backed up, add `owners` to `config.json`:
 
-```
+```json
 {
     "token": "GITHUB_TOKEN_HERE",
     "directory": "~/backups/github.com",
     "type": "backup",
-    "owners": ["username", "anotherusername"]
+    "owners": ["username", "another-username"]
 }
 ```
 
@@ -66,16 +66,18 @@ By default, all repositories you have read access to are backed up. To choose wh
 
 After preparing the token and the configuration file you now can run the script:
 
-```
-$ ./backup.py
+```bash
+./backup.py
 ```
 
 If you want to manually pass the options instead of using the config.json file, you can use the following command:
-```
-$ ./backup.py --token=<TOKEN> --directory=<DIRECTORY> --username=<USER1,USER2> --type=<TYPE>
+
+```bash
+./backup.py --config=<CONFIG> --token=<TOKEN> --directory=<DIRECTORY> --owners=<OWNER,OWNER> --type={backup,clone}
 ```
 
 For help, type:
-```
-$ ./backup.py --help
+
+```bash
+./backup.py --help
 ```

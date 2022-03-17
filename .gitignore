@@ -3,6 +3,7 @@ config.json
 .vscode
 .history
 venv
+.venv
 .env
 .env.local
 .env.development
@@ -10,4 +11,3 @@ venv
 .env.production
 .env.staging
 .env.docker
-config.json
