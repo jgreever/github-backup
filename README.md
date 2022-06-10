@@ -12,10 +12,10 @@ Repeated runs only update the already existing backups and add new repositories,
 
 ## Installation
 
-Install the required Python dependencies using `pip3`:
+Install the required Python3 dependencies using `pip`:
 
 ```bash
-pip3 install -r requirements.txt
+pip install -r requirements.txt
 ```
 
 ## Configuring
