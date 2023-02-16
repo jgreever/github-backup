@@ -30,4 +30,4 @@ stem==1.8.0
 tomli==2.0.1
 torrequest==0.1.0
 urllib3==1.26.8
-Werkzeug==2.0.3
+Werkzeug==2.2.3
